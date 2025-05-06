@@ -1,0 +1,52 @@
+@startuml
+
+class Pet{
+-name
+-birthDate
+}
+
+class Visit {
+-date
+-Pet:pet
+-description
+-duration
+-visitStatus
+}
+
+Enum VisitStatus {
+ACTIVE, CANCELED, IN_PROGRESS, FINISHED
+}
+
+abstract class Person {
+-firstName
+-lastName
+-name
+-password
+-Collection<Role>: roles
+}
+
+class Role {
+-ERole: name
+}
+
+Enum ERole {
+ROLE_USER, ROLE_MODERATOR, ROLE_ADMIN
+}
+
+class Customer extends Person {
+-address
+-city
+-telephone
+-Pet:pet
+}
+
+class Veterinary extends Person {
+-salary
+-List<Visit>:visits
+
+}
+
+Customer "1"--"1" Pet
+Veterinary "1"--"n" Visit
+Person "n"--"n" Role
+@enduml
