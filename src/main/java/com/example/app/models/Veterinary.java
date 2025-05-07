@@ -1,9 +1,6 @@
 package com.example.app.models;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.PrimaryKeyJoinColumn;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -24,6 +21,6 @@ public class Veterinary extends Person {
 
     private double salary;
 
-    @OneToMany(mappedBy = "veterinary")
+    @OneToMany(mappedBy = "veterinary", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<Visit> visits;
 }
