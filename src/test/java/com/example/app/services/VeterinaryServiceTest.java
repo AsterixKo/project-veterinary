@@ -1,7 +1,7 @@
 package com.example.app.services;
 
-import com.example.app.exceptions.RoleNotFound;
-import com.example.app.exceptions.UserExistsInDatabase;
+import com.example.app.exceptions.RoleNotFoundException;
+import com.example.app.exceptions.UserExistsInDatabaseException;
 import com.example.app.models.Veterinary;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -20,7 +20,7 @@ public class VeterinaryServiceTest {
 
 
     @BeforeEach
-    public void setUp() throws UserExistsInDatabase, RoleNotFound {
+    public void setUp() throws UserExistsInDatabaseException, RoleNotFoundException {
         veterinary = new Veterinary();
         veterinary.setUsername("testing_jon_admin");
         veterinary.setPassword("1234");

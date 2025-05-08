@@ -1,7 +1,7 @@
 package com.example.app.services;
 
-import com.example.app.exceptions.RoleNotFound;
-import com.example.app.exceptions.UserExistsInDatabase;
+import com.example.app.exceptions.RoleNotFoundException;
+import com.example.app.exceptions.UserExistsInDatabaseException;
 import com.example.app.models.Customer;
 import com.example.app.models.ERole;
 import com.example.app.models.Role;
@@ -27,13 +27,13 @@ public class CustomerService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public Customer saveUser(Customer customer) throws UserExistsInDatabase, RoleNotFound {
+    public Customer saveUser(Customer customer) throws UserExistsInDatabaseException, RoleNotFoundException {
 
         Optional<Customer> customerOptional = customerRepository.findByUsername(customer.getUsername());
 
         if(customerOptional.isPresent()){
             log.error("El usuario ya existe en la base de datos");
-            throw new UserExistsInDatabase("El usuario ya existe en la base de datos");
+            throw new UserExistsInDatabaseException("El usuario ya existe en la base de datos");
         }
 
         if(customer.getUsername() == null || customer.getPassword().isEmpty()){
@@ -70,7 +70,7 @@ public class CustomerService {
 
         if(!roleOptional.isPresent()) {
             log.error("El rol no existe en base de datos");
-            throw new RoleNotFound("El rol no existe en base de datos");
+            throw new RoleNotFoundException("El rol no existe en base de datos");
         }
 
         customer.setRoles(Arrays.asList(roleOptional.get()));

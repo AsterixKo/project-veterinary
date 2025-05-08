@@ -1,7 +1,7 @@
 package com.example.app.services;
 
-import com.example.app.exceptions.RoleNotFound;
-import com.example.app.exceptions.UserExistsInDatabase;
+import com.example.app.exceptions.RoleNotFoundException;
+import com.example.app.exceptions.UserExistsInDatabaseException;
 import com.example.app.models.ERole;
 import com.example.app.models.Role;
 import com.example.app.models.Veterinary;
@@ -27,11 +27,11 @@ public class VeterinaryService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public Veterinary saveUser(Veterinary veterinary) throws UserExistsInDatabase, RoleNotFound {
+    public Veterinary saveUser(Veterinary veterinary) throws UserExistsInDatabaseException, RoleNotFoundException {
         Optional<Veterinary> veterinaryOptional = veterinaryRepository.findByUsername(veterinary.getUsername());
 
         if(veterinaryOptional.isPresent()){
-            throw new UserExistsInDatabase("El usuario ya existe en la base de datos");
+            throw new UserExistsInDatabaseException("El usuario ya existe en la base de datos");
         }
 
         // comprobacion de campos
@@ -54,7 +54,7 @@ public class VeterinaryService {
 
         if(!roleOptional.isPresent()) {
             log.error("El rol no existe en base de datos");
-            throw new RoleNotFound("El rol no existe en base de datos");
+            throw new RoleNotFoundException("El rol no existe en base de datos");
         }
 
         veterinary.setRoles(Arrays.asList(roleOptional.get()));
