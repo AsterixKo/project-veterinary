@@ -7,6 +7,7 @@ import com.example.app.models.Role;
 import com.example.app.models.Veterinary;
 import com.example.app.repositories.RoleRepository;
 import com.example.app.repositories.VeterinaryRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.util.Arrays;
 import java.util.Optional;
 
+@Slf4j
 @Service
 public class VeterinaryService {
     @Autowired
@@ -32,9 +34,26 @@ public class VeterinaryService {
             throw new UserExistsInDatabase("El usuario ya existe en la base de datos");
         }
 
+        // comprobacion de campos
+        if(veterinary.getUsername() == null || veterinary.getPassword().isEmpty()){
+            log.error("Error username no puede ser vacio");
+            throw new IllegalArgumentException("Error username no puede ser vacio");
+        }
+
+        if(veterinary.getFirstName() == null || veterinary.getFirstName().isEmpty()) {
+            log.error("Error el firstName no puede ser vacio");
+            throw new IllegalArgumentException("Error el firstName no puede ser vacio");
+        }
+
+        if(veterinary.getLastName() == null || veterinary.getLastName().isEmpty()){
+            log.error("Error el lastName no puede ser vacio");
+            throw new IllegalArgumentException("Error el lastName no puede ser vacio");
+        }
+
         Optional<Role> roleOptional = roleRepository.findByName(ERole.ROLE_ADMIN);
 
         if(!roleOptional.isPresent()) {
+            log.error("El rol no existe en base de datos");
             throw new RoleNotFound("El rol no existe en base de datos");
         }
 
