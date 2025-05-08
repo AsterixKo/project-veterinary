@@ -2,15 +2,20 @@ package com.example.app.controllers;
 
 import com.example.app.exceptions.CustomerHasPetException;
 import com.example.app.exceptions.CustomerNotFoundException;
+import com.example.app.exceptions.PetNotFoundException;
+import com.example.app.exceptions.VeterinaryNotFoundException;
 import com.example.app.models.Customer;
 import com.example.app.models.Pet;
 import com.example.app.models.Veterinary;
+import com.example.app.models.Visit;
 import com.example.app.models.dtos.AuthRegisterCustomerDto;
 import com.example.app.models.dtos.AuthRegisterVeterinaryDto;
 import com.example.app.models.dtos.PetCreationDto;
+import com.example.app.models.dtos.VisitCreationDto;
 import com.example.app.services.CustomerService;
 import com.example.app.services.PetService;
 import com.example.app.services.VeterinaryService;
+import com.example.app.services.VisitService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -38,6 +43,9 @@ public class VeterinaryController {
 
     @Autowired
     private PetService petService;
+
+    @Autowired
+    private VisitService visitService;
 
     @GetMapping("/profile")
     public String profile(Veterinary veterinary) {
@@ -162,6 +170,54 @@ public class VeterinaryController {
         } catch (Exception e) {
             log.error("Error guardando pet {}", e.getMessage());
             return new ResponseEntity<>("Error al crear el pet", HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PostMapping("/add-visit/{idVeterinary}")
+    public ResponseEntity<?> addVisit(@PathVariable Long idVeterinary, @RequestBody VisitCreationDto visitCreationDto) {
+        try {
+            if (visitCreationDto.getDuration() <= 0) {
+                return new ResponseEntity<>("duration no puede ser menor o igual a 0",
+                        HttpStatus.BAD_REQUEST);
+            } else if (visitCreationDto.getDescription() == null || visitCreationDto.getDescription().isEmpty()) {
+                return new ResponseEntity<>("description no puede ser vacio",
+                        HttpStatus.BAD_REQUEST);
+            } else if (visitCreationDto.getIdPet() == null) {
+                return new ResponseEntity<>("idPet no puede ser null", HttpStatus.BAD_REQUEST);
+            }
+
+            // validar fecha con tiempo
+            String formatDateTime = "dd-MM-yyyy HH:mm:ss";
+            try {
+                // comprobar fecha
+
+                SimpleDateFormat formatter = new SimpleDateFormat(formatDateTime, Locale.ENGLISH);
+                Date dateVisit = formatter.parse(visitCreationDto.getDate());
+
+                Visit visit = Visit.builder()
+                        .date(dateVisit)
+                        .description(visitCreationDto.getDescription())
+                        .duration(visitCreationDto.getDuration())
+                        .build();
+
+                Visit visitSaved = visitService.saveNewVisit(idVeterinary, visitCreationDto.getIdPet(), visit);
+                return new ResponseEntity<Visit>(visitSaved, HttpStatus.CREATED);
+            } catch (ParseException eParse) {
+                log.error("Error guardando Visit, el formato de fecha no es correcto {}", eParse.getMessage());
+                return new ResponseEntity<>("Error al crear el Visit, el formato de fecha no es correcto "+formatDateTime,
+                        HttpStatus.BAD_REQUEST);
+            } catch (VeterinaryNotFoundException eVeterinary){
+                log.error("Error guardando Visit, veterinario no encontrado {}", eVeterinary.getMessage());
+                return new ResponseEntity<>("Error al crear el Visit, veterinario no encontrado",
+                        HttpStatus.BAD_REQUEST);
+            } catch (PetNotFoundException ePet){
+                log.error("Error guardando Visit, pet no encontrado {}", ePet.getMessage());
+                return new ResponseEntity<>("Error al crear el Visit, pet no encontrado",
+                        HttpStatus.BAD_REQUEST);
+            }
+        } catch (Exception e) {
+            log.error("Error creando Visit {}", e.getMessage());
+            return new ResponseEntity<>("Error creando Visit", HttpStatus.BAD_REQUEST);
         }
     }
 }
