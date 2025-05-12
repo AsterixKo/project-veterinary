@@ -2,9 +2,10 @@ package com.example.app.services;
 
 import com.example.app.exceptions.RoleNotFoundException;
 import com.example.app.exceptions.UserExistsInDatabaseException;
-import com.example.app.models.ERole;
-import com.example.app.models.Role;
-import com.example.app.models.Veterinary;
+import com.example.app.exceptions.VeterinaryNotFoundException;
+import com.example.app.models.*;
+import com.example.app.models.dtos.VeterinaryResponseDto;
+import com.example.app.models.dtos.VisitResponseDto;
 import com.example.app.repositories.RoleRepository;
 import com.example.app.repositories.VeterinaryRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -12,8 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -30,29 +30,29 @@ public class VeterinaryService {
     public Veterinary saveUser(Veterinary veterinary) throws UserExistsInDatabaseException, RoleNotFoundException {
         Optional<Veterinary> veterinaryOptional = veterinaryRepository.findByUsername(veterinary.getUsername());
 
-        if(veterinaryOptional.isPresent()){
+        if (veterinaryOptional.isPresent()) {
             throw new UserExistsInDatabaseException("El usuario ya existe en la base de datos");
         }
 
         // comprobacion de campos
-        if(veterinary.getUsername() == null || veterinary.getPassword().isEmpty()){
+        if (veterinary.getUsername() == null || veterinary.getPassword().isEmpty()) {
             log.error("Error username no puede ser vacio");
             throw new IllegalArgumentException("Error username no puede ser vacio");
         }
 
-        if(veterinary.getFirstName() == null || veterinary.getFirstName().isEmpty()) {
+        if (veterinary.getFirstName() == null || veterinary.getFirstName().isEmpty()) {
             log.error("Error el firstName no puede ser vacio");
             throw new IllegalArgumentException("Error el firstName no puede ser vacio");
         }
 
-        if(veterinary.getLastName() == null || veterinary.getLastName().isEmpty()){
+        if (veterinary.getLastName() == null || veterinary.getLastName().isEmpty()) {
             log.error("Error el lastName no puede ser vacio");
             throw new IllegalArgumentException("Error el lastName no puede ser vacio");
         }
 
         Optional<Role> roleOptional = roleRepository.findByName(ERole.ROLE_ADMIN);
 
-        if(!roleOptional.isPresent()) {
+        if (!roleOptional.isPresent()) {
             log.error("El rol no existe en base de datos");
             throw new RoleNotFoundException("El rol no existe en base de datos");
         }
@@ -73,5 +73,51 @@ public class VeterinaryService {
 
     public Optional<Veterinary> findByUsername(String username) {
         return veterinaryRepository.findByUsername(username);
+    }
+
+    public VeterinaryResponseDto findById(Long id) throws VeterinaryNotFoundException {
+        if (id == null) {
+            throw new IllegalArgumentException("Error id no puede ser null");
+        }
+
+        Optional<Veterinary> veterinaryOptional = veterinaryRepository.findById(id);
+
+        if (!veterinaryOptional.isPresent()) {
+            throw new VeterinaryNotFoundException("Error Veterinary no encontrado");
+        }
+
+        Veterinary veterinaryFound = veterinaryOptional.get();
+
+        VeterinaryResponseDto veterinaryResponseDto = new VeterinaryResponseDto();
+
+        veterinaryResponseDto.setId(veterinaryFound.getId());
+        veterinaryResponseDto.setUsername(veterinaryFound.getUsername());
+        veterinaryResponseDto.setFirstName(veterinaryFound.getFirstName());
+        veterinaryResponseDto.setLastName(veterinaryFound.getLastName());
+        veterinaryResponseDto.setSalary(veterinaryFound.getSalary());
+
+        // set visits
+        List<VisitResponseDto> visitResponseDtoList = new ArrayList<>();
+        for (Visit visit : veterinaryFound.getVisits()) {
+            VisitResponseDto visitResponseDto = new VisitResponseDto();
+            visitResponseDto.setId(visit.getId());
+            visitResponseDto.setDate(visit.getDate());
+
+            if (visit.getPet() != null) {
+                visitResponseDto.setPetId(visit.getPet().getId());
+            }
+
+            visitResponseDto.setDescription(visit.getDescription());
+            visitResponseDto.setDuration(visit.getDuration());
+            if (visit.getVeterinary() != null) {
+                visitResponseDto.setVeterinaryId(visit.getVeterinary().getId());
+            }
+
+            visitResponseDto.setVisitStatus(visit.getVisitStatus());
+            visitResponseDtoList.add(visitResponseDto);
+        }
+        veterinaryResponseDto.setVisits(visitResponseDtoList);
+
+        return veterinaryResponseDto;
     }
 }

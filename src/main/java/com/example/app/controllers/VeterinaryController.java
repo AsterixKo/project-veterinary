@@ -8,10 +8,7 @@ import com.example.app.models.Customer;
 import com.example.app.models.Pet;
 import com.example.app.models.Veterinary;
 import com.example.app.models.Visit;
-import com.example.app.models.dtos.AuthRegisterCustomerDto;
-import com.example.app.models.dtos.AuthRegisterVeterinaryDto;
-import com.example.app.models.dtos.PetCreationDto;
-import com.example.app.models.dtos.VisitCreationDto;
+import com.example.app.models.dtos.*;
 import com.example.app.services.CustomerService;
 import com.example.app.services.PetService;
 import com.example.app.services.VeterinaryService;
@@ -26,6 +23,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 @Slf4j
@@ -160,7 +158,7 @@ public class VeterinaryController {
                 log.error("Error guardando pet, el customer no se encuentra en base de datos {}",
                         eCustomerNotFound.getMessage());
                 return new ResponseEntity<>("Error guardando pet, el customer no se encuentra en base de datos",
-                        HttpStatus.BAD_REQUEST);
+                        HttpStatus.NOT_FOUND);
             } catch (CustomerHasPetException eCustomerHasPetException) {
                 log.error("Error guardando pet, el customer ya tiene pet {}",
                         eCustomerHasPetException.getMessage());
@@ -204,20 +202,36 @@ public class VeterinaryController {
                 return new ResponseEntity<Visit>(visitSaved, HttpStatus.CREATED);
             } catch (ParseException eParse) {
                 log.error("Error guardando Visit, el formato de fecha no es correcto {}", eParse.getMessage());
-                return new ResponseEntity<>("Error al crear el Visit, el formato de fecha no es correcto "+formatDateTime,
+                return new ResponseEntity<>("Error al crear el Visit, el formato de fecha no es correcto " + formatDateTime,
                         HttpStatus.BAD_REQUEST);
-            } catch (VeterinaryNotFoundException eVeterinary){
+            } catch (VeterinaryNotFoundException eVeterinary) {
                 log.error("Error guardando Visit, veterinario no encontrado {}", eVeterinary.getMessage());
                 return new ResponseEntity<>("Error al crear el Visit, veterinario no encontrado",
-                        HttpStatus.BAD_REQUEST);
-            } catch (PetNotFoundException ePet){
+                        HttpStatus.NOT_FOUND);
+            } catch (PetNotFoundException ePet) {
                 log.error("Error guardando Visit, pet no encontrado {}", ePet.getMessage());
                 return new ResponseEntity<>("Error al crear el Visit, pet no encontrado",
-                        HttpStatus.BAD_REQUEST);
+                        HttpStatus.NOT_FOUND);
             }
         } catch (Exception e) {
             log.error("Error creando Visit {}", e.getMessage());
             return new ResponseEntity<>("Error creando Visit", HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @GetMapping("/{veterinaryId}")
+    public ResponseEntity<?> getVeterinaryById(@PathVariable Long veterinaryId) {
+        try {
+            log.info("getVeterinaryById {}", veterinaryId);
+            VeterinaryResponseDto veterinaryResponseDto = veterinaryService.findById(veterinaryId);
+            return new ResponseEntity<VeterinaryResponseDto>(veterinaryResponseDto, HttpStatus.FOUND);
+        } catch (VeterinaryNotFoundException eVeterinary) {
+            log.error("Error veterinario no encontrado {}", eVeterinary.getMessage());
+            return new ResponseEntity<>("Error veterinario no encontrado",
+                    HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            log.error("Error obteniendo Veterinary {}", e.getMessage());
+            return new ResponseEntity<>("Error obteniendo Veterinary", HttpStatus.BAD_REQUEST);
         }
     }
 }
