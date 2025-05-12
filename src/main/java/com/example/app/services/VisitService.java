@@ -32,10 +32,11 @@ public class VisitService {
     @Autowired
     private VisitRepository visitRepository;
 
-    public Visit saveNewVisit(Long idVeterinary, Long idPet, Visit visit)
+    public VisitResponseDto saveNewVisit(Long idVeterinary, Long idPet, Visit visit)
             throws VeterinaryNotFoundException,
             PetNotFoundException {
 
+        log.info("validaciones de IllegalArgumentException");
         if (idVeterinary == null) {
             log.error("idVeterinary no puede ser null");
             throw new IllegalArgumentException("idVeterinary no puede ser null");
@@ -81,9 +82,22 @@ public class VisitService {
         visit.setVeterinary(veterinaryOptional.get());
         visit.setVisitStatus(VisitStatus.ACTIVE);
 
-        log.info("guardando visit: {}", visit);
+        log.info("guardando visit");
 
-        return visitRepository.save(visit);
+        Visit visitSaved = visitRepository.save(visit);
+
+        VisitResponseDto visitResponseDto = VisitResponseDto
+                .builder()
+                .id(visitSaved.getId())
+                .date(visitSaved.getDate())
+                .petId(visitSaved.getPet() != null ? visitSaved.getPet().getId() : null)
+                .description(visitSaved.getDescription())
+                .duration(visitSaved.getDuration())
+                .veterinaryId(visitSaved.getVeterinary() != null ? visitSaved.getVeterinary().getId() : null)
+                .visitStatus(visitSaved.getVisitStatus())
+                .build();
+
+        return visitResponseDto;
     }
 
     @Transactional
@@ -109,10 +123,11 @@ public class VisitService {
                 .builder()
                 .id(visitFound.get().getId())
                 .date(visitFound.get().getDate())
-                .petId(visitFound.get().getPet().getId())
+                .petId(visitFound.get().getPet() != null ? visitFound.get().getPet().getId() : null)
                 .description(visitFound.get().getDescription())
                 .duration(visitFound.get().getDuration())
-                .veterinaryId(visitFound.get().getVeterinary().getId())
+                .veterinaryId(visitFound.get().getVeterinary() != null ?
+                        visitFound.get().getVeterinary().getId() : null)
                 .visitStatus(visitFound.get().getVisitStatus())
                 .build();
 
