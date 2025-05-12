@@ -120,4 +120,45 @@ public class VeterinaryService {
 
         return veterinaryResponseDto;
     }
+
+    public List<VeterinaryResponseDto> findAll() {
+        List<Veterinary> veterinaryList = veterinaryRepository.findAll();
+
+        List<VeterinaryResponseDto> veterinaryResponseDtoList = new ArrayList<>();
+        for(Veterinary veterinary :veterinaryList){
+            VeterinaryResponseDto veterinaryResponseDto = new VeterinaryResponseDto();
+
+            veterinaryResponseDto.setId(veterinary.getId());
+            veterinaryResponseDto.setUsername(veterinary.getUsername());
+            veterinaryResponseDto.setFirstName(veterinary.getFirstName());
+            veterinaryResponseDto.setLastName(veterinary.getLastName());
+            veterinaryResponseDto.setSalary(veterinary.getSalary());
+
+            // set visits
+            List<VisitResponseDto> visitResponseDtoList = new ArrayList<>();
+            for (Visit visit : veterinary.getVisits()) {
+                VisitResponseDto visitResponseDto = new VisitResponseDto();
+                visitResponseDto.setId(visit.getId());
+                visitResponseDto.setDate(visit.getDate());
+
+                if (visit.getPet() != null) {
+                    visitResponseDto.setPetId(visit.getPet().getId());
+                }
+
+                visitResponseDto.setDescription(visit.getDescription());
+                visitResponseDto.setDuration(visit.getDuration());
+                if (visit.getVeterinary() != null) {
+                    visitResponseDto.setVeterinaryId(visit.getVeterinary().getId());
+                }
+
+                visitResponseDto.setVisitStatus(visit.getVisitStatus());
+                visitResponseDtoList.add(visitResponseDto);
+            }
+            veterinaryResponseDto.setVisits(visitResponseDtoList);
+
+            veterinaryResponseDtoList.add(veterinaryResponseDto);
+        }
+
+        return veterinaryResponseDtoList;
+    }
 }

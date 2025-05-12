@@ -234,4 +234,15 @@ public class VeterinaryController {
             return new ResponseEntity<>("Error obteniendo Veterinary", HttpStatus.BAD_REQUEST);
         }
     }
+
+    @GetMapping("/get-veterinaries")
+    public ResponseEntity<?> getVeterinaries() {
+        try{
+            List<VeterinaryResponseDto> veterinaryResponseDtoList = veterinaryService.findAll();
+            return new ResponseEntity<List<VeterinaryResponseDto>>(veterinaryResponseDtoList, HttpStatus.FOUND);
+        } catch (Exception e) {
+            log.error("Error obteniendo veterinarios {}", e.getMessage());
+            return new ResponseEntity<>("Error obteniendo veterinarios", HttpStatus.BAD_REQUEST);
+        }
+    }
 }
