@@ -36,7 +36,7 @@ public class CustomerService {
             throw new UserExistsInDatabaseException("El usuario ya existe en la base de datos");
         }
 
-        if(customer.getUsername() == null || customer.getPassword().isEmpty()){
+        if(customer.getUsername() == null || customer.getUsername().isEmpty()){
             log.error("Error username no puede ser vacio");
             throw new IllegalArgumentException("Error username no puede ser vacio");
         }

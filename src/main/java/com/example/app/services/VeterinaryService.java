@@ -35,7 +35,7 @@ public class VeterinaryService {
         }
 
         // comprobacion de campos
-        if (veterinary.getUsername() == null || veterinary.getPassword().isEmpty()) {
+        if (veterinary.getUsername() == null || veterinary.getUsername().isEmpty()) {
             log.error("Error username no puede ser vacio");
             throw new IllegalArgumentException("Error username no puede ser vacio");
         }
